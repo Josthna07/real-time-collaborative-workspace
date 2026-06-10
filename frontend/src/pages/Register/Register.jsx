@@ -1,73 +1,58 @@
+import { Link } from "react-router-dom";
+
 function Register() {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      <div
-        style={{
-          width: "350px",
-          padding: "25px",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h2>Register</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-600 to-pink-500">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-96">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+          Create Account
+        </h2>
 
-        <input
-          type="text"
-          placeholder="Full Name"
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        />
+        <p className="text-center text-gray-500 mb-6">
+          Join your team workspace
+        </p>
 
-        <input
-          type="email"
-          placeholder="Email"
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        />
+        <form>
+          <input
+            type="text"
+            placeholder="Full Name"
+            className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        />
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
 
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
 
-        <button
-          style={{
-            width: "100%",
-            padding: "10px",
-            cursor: "pointer",
-          }}
-        >
-          Register
-        </button>
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <button
+            className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition"
+          >
+            Register
+          </button>
+        </form>
+
+        <p className="text-center mt-5 text-gray-600">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-purple-600 font-semibold"
+          >
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );

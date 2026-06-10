@@ -2,29 +2,23 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "15px 30px",
-        borderBottom: "1px solid #ddd",
-      }}
-    >
-      <h2>Workspace</h2>
+    <nav className="bg-white shadow-md px-8 py-4 flex justify-between items-center">
+      <h1 className="text-2xl font-bold text-blue-600">
+        Workspace
+      </h1>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-        }}
-      >
-        <Link to="/">Home</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/register">Register</Link>
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/workspace">Workspace</Link>
-        <Link to="/settings">Settings</Link>
+      <div className="flex gap-6">
+        <Link to="/" className="hover:text-blue-600">
+          Home
+        </Link>
+
+        <Link to="/login" className="hover:text-blue-600">
+          Login
+        </Link>
+
+        <Link to="/register" className="hover:text-blue-600">
+          Register
+        </Link>
       </div>
     </nav>
   );

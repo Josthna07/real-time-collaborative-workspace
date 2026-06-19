@@ -5,10 +5,14 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const connectDB = require("./backend/config/db");
+const authRoutes = require("./backend/routes/authRoutes");
 
 connectDB();
+const mongoose = require("mongoose");
 
 const app = express();
+app.use(express.json());
+app.use("/api/auth", authRoutes);
 
 const server = http.createServer(app);
 

@@ -36,11 +36,42 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
+
   console.log("User Connected:", socket.id);
 
-  socket.on("disconnect", () => {
-    console.log("User Disconnected");
+  socket.on("joinWorkspace", (workspaceId) => {
+
+    socket.join(workspaceId);
+
+    console.log(
+      "Joined Workspace:",
+      workspaceId
+    );
+
   });
+
+  socket.on("taskUpdated", (data) => {
+
+    socket.to(data.workspaceId).emit(
+
+      "taskChanged",
+
+      data
+
+    );
+
+  });
+
+  socket.on("disconnect", () => {
+
+    console.log(
+
+      "User Disconnected"
+
+    );
+
+  });
+
 });
 
 server.listen(5000, () => {

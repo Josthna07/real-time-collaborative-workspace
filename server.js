@@ -20,6 +20,10 @@ app.use("/api/test", testRoutes);
 const workspaceRoutes = require("./backend/routes/workspaceRoutes");
 app.use("/api/workspaces", workspaceRoutes);
 
+const boardRoutes = require("./backend/routes/boardRoutes");
+app.use("/api/workspaces",workspaceRoutes);
+app.use("/api/boards",boardRoutes);
+
 const server = http.createServer(app);
 
 const io = new Server(server, {

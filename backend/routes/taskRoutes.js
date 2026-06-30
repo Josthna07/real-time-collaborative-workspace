@@ -4,13 +4,13 @@ const {
 
 createTask,
 
-getTasks
+getTasks,
 
-}=require(
+updateTask,
 
-"../controllers/taskController"
+deleteTask
 
-);
+} = require("../controllers/taskController");
 
 const {
 
@@ -47,5 +47,24 @@ getTasks
 
 );
 
+router.put(
+
+"/:id",
+
+protect,
+
+updateTask
+
+);
+
+router.delete(
+
+"/:id",
+
+protect,
+
+deleteTask
+
+);
 
 module.exports = router;

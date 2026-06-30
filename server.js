@@ -14,6 +14,12 @@ const app = express();
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 
+const testRoutes = require("./backend/routes/testRoutes");
+app.use("/api/test", testRoutes);
+
+const workspaceRoutes = require("./backend/routes/workspaceRoutes");
+app.use("/api/workspaces", workspaceRoutes);
+
 const server = http.createServer(app);
 
 const io = new Server(server, {

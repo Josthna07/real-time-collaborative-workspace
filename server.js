@@ -24,6 +24,9 @@ const boardRoutes = require("./backend/routes/boardRoutes");
 app.use("/api/workspaces",workspaceRoutes);
 app.use("/api/boards",boardRoutes);
 
+const taskRoutes =require("./backend/routes/taskRoutes");
+app.use("/api/tasks",taskRoutes);
+
 const server = http.createServer(app);
 
 const io = new Server(server, {

@@ -1,12 +1,30 @@
 require("dotenv").config();
 
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const connectDB = require("./backend/config/db");
 
 connectDB();
 
 const app = express();
 
-app.listen(5000, () => {
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User Connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("User Disconnected");
+  });
+});
+
+server.listen(5000, () => {
   console.log("Server running on port 5000");
 });

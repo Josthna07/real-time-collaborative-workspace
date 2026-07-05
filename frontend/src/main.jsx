@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </Provider>
   </React.StrictMode>
 );
-=======
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -27,4 +27,4 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
->>>>>>> e1c6059602d7f8eba8b2f40bc22337736519ad57
+

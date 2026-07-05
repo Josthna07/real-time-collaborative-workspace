@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
 import { Fragment, useRef } from "react";
@@ -118,7 +118,7 @@ function App() {
 }
 
 export default App;
-=======
+
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
@@ -126,4 +126,4 @@ function App() {
 }
 
 export default App;
->>>>>>> e1c6059602d7f8eba8b2f40bc22337736519ad57
+

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@headlessui/react": "^2.2.10",
     "@reduxjs/toolkit": "^2.12.0",
     "@tailwindcss/vite": "^4.3.0",
@@ -32,6 +33,23 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+=======
+    "@hello-pangea/dnd": "^18.0.1",
+    "@tailwindcss/vite": "^4.3.0",
+    "axios": "^1.17.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.17.0",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.3.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+>>>>>>> e1c6059602d7f8eba8b2f40bc22337736519ad57
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

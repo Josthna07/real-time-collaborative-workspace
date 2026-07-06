@@ -2,6 +2,7 @@ const Workspace = require("../models/Workspace");
 const Board = require("../models/Board");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+
 // Create Workspace
 const createWorkspace = async (req, res) => {
   try {
@@ -98,15 +99,15 @@ const updateWorkspace = async (req, res) => {
 const deleteWorkspace = async (req, res) => {
   try {
     const workspace = await Workspace.findByIdAndDelete(req.params.id);
-    await Board.deleteMany({
-  workspace: req.params.id,
-});
+
     if (!workspace) {
       return res.status(404).json({
         success: false,
         message: "Workspace not found",
       });
     }
+
+    await Board.deleteMany({ workspace: req.params.id });
 
     res.status(200).json({
       success: true,
@@ -119,10 +120,10 @@ const deleteWorkspace = async (req, res) => {
     });
   }
 };
+
+// Get Workspace Boards
 const getWorkspaceBoards = async (req, res) => {
-
   try {
-
     const boards = await Board.find({
       workspace: req.params.id,
     });
@@ -131,42 +132,20 @@ const getWorkspaceBoards = async (req, res) => {
       success: true,
       boards,
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: error.message,
     });
-
   }
-
 };
+
+// Invite Member
 const inviteMember = async (req, res) => {
   try {
     const { memberId } = req.body;
-console.log("Received Member ID:", memberId);
 
-const allUsers = await User.find();
-console.log("All Users:", allUsers);
-
-console.log("Database Name:", User.db.name);
-
-const users = await User.find({});
-console.log("Users in DB:", users);
-
-console.log("Searching:", memberId);
-console.log("Connected Database:", mongoose.connection.name);
-
-console.log("Users:", users);
-
-console.log("Searching Member ID:", memberId);
-const user = await User.findById(memberId);
-
-console.log("Found User:", user);
-console.log("User Found:", user);
     const workspace = await Workspace.findById(req.params.id);
-
     if (!workspace) {
       return res.status(404).json({
         success: false,
@@ -174,15 +153,13 @@ console.log("User Found:", user);
       });
     }
 
-    console.log("Received Member ID:", memberId);
-console.log("User Found:", user);
-
-if (!user) {
-  return res.status(404).json({
-    success: false,
-    message: "User not found",
-  });
-}
+    const user = await User.findById(memberId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     if (workspace.members.includes(memberId)) {
       return res.status(400).json({
@@ -192,7 +169,6 @@ if (!user) {
     }
 
     workspace.members.push(memberId);
-
     await workspace.save();
 
     res.status(200).json({
@@ -200,63 +176,21 @@ if (!user) {
       message: "Member invited successfully",
       workspace,
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: error.message,
     });
-
   }
 };
 
+// Export All
 module.exports = {
   createWorkspace,
   getWorkspaces,
   getWorkspaceById,
   updateWorkspace,
   deleteWorkspace,
-  inviteMember,
   getWorkspaceBoards,
-};const Workspace = require("../models/Workspace");
-
-const createWorkspace = async (req, res) => {
-  try {
-    const workspace = await Workspace.create({
-      name: req.body.name,
-      owner: req.user.id,
-      members: [req.user.id],
-    });
-
-    res.status(201).json(workspace);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-const getWorkspaces = async (req, res) => {
-  try {
-
-    const workspaces = await Workspace.find({
-      members: req.user.id
-    });
-
-    res.json(workspaces);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
-  }
-};
-
-
-module.exports = {
-  createWorkspace,
-  getWorkspaces,
+  inviteMember,
 };

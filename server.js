@@ -1,15 +1,17 @@
 require("dotenv").config();
-const mongoose = require("mongoose");
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 
-const connectDB = require("./backend/config/db");
+// Routes
 const authRoutes = require("./backend/routes/authRoutes");
 const workspaceRoutes = require("./backend/routes/workspaceRoutes");
 const boardRoutes = require("./backend/routes/boardRoutes");
+const commentRoutes = require("./backend/routes/commentRoutes");
 
-// Connect MongoDB
+// DB Connection
+const connectDB = require("./backend/config/db");
 connectDB();
 
 const app = express();
@@ -17,6 +19,12 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes Middleware
+app.use("/api/auth", authRoutes);
+app.use("/api/workspaces", workspaceRoutes);
+app.use("/api/boards", boardRoutes);
+app.use("/api/comments", commentRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
@@ -40,8 +48,6 @@ io.on("connection", (socket) => {
 
   // Notification Event
   socket.on("sendNotification", (data) => {
-    console.log("Notification:", data);
-
     io.emit("receiveNotification", {
       message: data.message,
       sender: data.sender,
@@ -49,18 +55,16 @@ io.on("connection", (socket) => {
     });
   });
 
-  // Comment Event
+  // Comment Event (REAL-TIME)
   socket.on("sendComment", (data) => {
-    console.log("Comment:", data);
-
     io.emit("receiveComment", {
-      comment: data.comment,
+      task: data.task,
       user: data.user,
+      comment: data.comment,
       createdAt: new Date(),
     });
   });
 
-  // Disconnect Event
   socket.on("disconnect", () => {
     console.log("User Disconnected:", socket.id);
   });

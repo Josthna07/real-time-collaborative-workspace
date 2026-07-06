@@ -6,7 +6,15 @@ const createBoard = async (req, res) => {
   try {
     const { title, workspace, createdBy } = req.body;
 
-    // Check if workspace exists
+    // Check required fields
+    if (!title || !workspace || !createdBy) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // Check workspace exists
     const workspaceExists = await Workspace.findById(workspace);
 
     if (!workspaceExists) {
@@ -15,12 +23,8 @@ const createBoard = async (req, res) => {
         message: "Workspace not found",
       });
     }
-    if (!title || !workspace || !createdBy) {
-  return res.status(400).json({
-    success: false,
-    message: "All fields are required",
-  });
-}
+
+    // Create board
     const board = await Board.create({
       title,
       workspace,
@@ -106,7 +110,6 @@ const updateBoard = async (req, res) => {
       message: "Board updated successfully",
       board,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -118,7 +121,6 @@ const updateBoard = async (req, res) => {
 // Delete Board
 const deleteBoard = async (req, res) => {
   try {
-
     const board = await Board.findById(req.params.id);
 
     if (!board) {
@@ -134,14 +136,11 @@ const deleteBoard = async (req, res) => {
       success: true,
       message: "Board deleted successfully",
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: error.message,
     });
-
   }
 };
 
@@ -151,73 +150,4 @@ module.exports = {
   getBoardById,
   updateBoard,
   deleteBoard,
-};const Board = require("../models/Board");
-
-
-const createBoard = async(req,res)=>{
-
-try{
-
-const board = await Board.create({
-
-name:req.body.name,
-
-workspace:req.body.workspace,
-
-createdBy:req.user.id
-
-});
-
-res.status(201).json(board);
-
-}
-
-catch(error){
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-}
-
-};
-
-
-
-const getBoards = async(req,res)=>{
-
-try{
-
-const boards = await Board.find({
-
-workspace:req.params.workspaceId
-
-});
-
-res.json(boards);
-
-}
-
-catch(error){
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-}
-
-};
-
-
-
-module.exports={
-
-createBoard,
-
-getBoards
-
 };

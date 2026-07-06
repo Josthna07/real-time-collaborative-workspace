@@ -1,56 +1,35 @@
+import MainLayout from "../../layouts/MainLayout";
+
 function Dashboard() {
   return (
-    <div
-      style={{
-        padding: "30px",
-      }}
-    >
-      <h1>Dashboard</h1>
+    <MainLayout>
+      <h1 className="text-3xl font-bold mb-6">
+        Dashboard
+      </h1>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          marginTop: "20px",
-        }}
-      >
-        <div
-          style={{
-            padding: "20px",
-            border: "1px solid #ddd",
-            borderRadius: "10px",
-            width: "200px",
-          }}
-        >
-          <h3>Total Workspaces</h3>
-          <p>5</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <h3 className="text-lg font-semibold">
+            Total Projects
+          </h3>
+          <p className="text-3xl mt-2">5</p>
         </div>
 
-        <div
-          style={{
-            padding: "20px",
-            border: "1px solid #ddd",
-            borderRadius: "10px",
-            width: "200px",
-          }}
-        >
-          <h3>Total Tasks</h3>
-          <p>20</p>
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <h3 className="text-lg font-semibold">
+            Total Tasks
+          </h3>
+          <p className="text-3xl mt-2">24</p>
         </div>
 
-        <div
-          style={{
-            padding: "20px",
-            border: "1px solid #ddd",
-            borderRadius: "10px",
-            width: "200px",
-          }}
-        >
-          <h3>Completed</h3>
-          <p>12</p>
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <h3 className="text-lg font-semibold">
+            Completed Tasks
+          </h3>
+          <p className="text-3xl mt-2">12</p>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
 

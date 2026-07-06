@@ -176,7 +176,13 @@ const inviteMember = async (req, res) => {
       message: "Member invited successfully",
       workspace,
     });
+<<<<<<< HEAD
   } catch (error) {
+=======
+
+    } catch (error) {
+
+>>>>>>> 8612dce (Backend integration completed and stabilized)
     res.status(500).json({
       success: false,
       message: error.message,
@@ -192,5 +198,7 @@ module.exports = {
   updateWorkspace,
   deleteWorkspace,
   getWorkspaceBoards,
+
   inviteMember,
 };
+

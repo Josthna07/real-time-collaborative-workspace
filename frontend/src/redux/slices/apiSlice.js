@@ -95,6 +95,12 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    logoutUser: builder.mutation({
+      query: () => ({
+        url: "/user/logout",
+        method: "POST",
+      }),
+    }),
     registerUser: builder.mutation({
       query: (data) => ({
         url: "/user/register",
@@ -156,6 +162,7 @@ export const {
   useDeleteRestoreTaskMutation,
   useRegisterUserMutation,
   useLoginUserMutation,
+  useLogoutUserMutation,
   useGetTeamListQuery,
   useUpdateUserProfileMutation,
   useActivateUserProfileMutation,

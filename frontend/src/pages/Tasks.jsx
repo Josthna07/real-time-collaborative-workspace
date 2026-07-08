@@ -7,7 +7,6 @@ import Title from "../components/Title";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
 import Tabs from "../components/Tabs";
-import TaskTitle from "../components/TaskTitle";
 import BoardView from "../components/BoardView";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
@@ -18,12 +17,6 @@ const TABS = [
   { title: "Board View", icon: <MdGridView /> },
   { title: "List View", icon: <FaList /> },
 ];
-
-const TASK_TYPE = {
-  todo: "bg-blue-600",
-  "in progress": "bg-yellow-600",
-  completed: "bg-green-600",
-};
 
 const Tasks = () => {
   const params = useParams();
@@ -60,32 +53,21 @@ const Tasks = () => {
       <Loading />
     </div>
   ) : (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full px-4 md:px-8">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <Title title={status ? `${status} Tasks` : "Tasks"} />
 
         {!status && (
           <Button
             onClick={() => setOpen(true)}
             label="Create Task"
-            icon={<IoMdAdd className="text-lg" />}
-            className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
+            icon={<IoMdAdd className="text-xl" />}
+            className="flex flex-row-reverse gap-2 items-center bg-blue-600 text-white rounded-md px-5 py-2.5 text-base font-semibold hover:bg-blue-700 shrink-0 mr-2"
           />
         )}
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {!status && (
-          <div className="w-full flex justify-between gap-4 md:gap-x-12 py-4">
-            <TaskTitle label="To Do" className={TASK_TYPE.todo} />
-            <TaskTitle
-              label="In Progress"
-              className={TASK_TYPE["in progress"]}
-            />
-            <TaskTitle label="completed" className={TASK_TYPE.completed} />
-          </div>
-        )}
-
         {selected !== 1 ? (
           <BoardView tasks={filteredTasks} />
         ) : (

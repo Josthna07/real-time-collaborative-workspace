@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
 import { Fragment, useRef } from "react";
@@ -22,6 +21,7 @@ function Layout() {
   const location = useLocation();
 
   return user ? (
+    
     <div className="w-full h-screen flex flex-col md:flex-row">
       <div className="w-1/5 h-screen bg-white sticky top-0 hidden md:block">
         <Sidebar />
@@ -118,12 +118,3 @@ function App() {
 }
 
 export default App;
-=======
-import AppRoutes from "./routes/AppRoutes";
-
-function App() {
-  return <AppRoutes />;
-}
-
-export default App;
->>>>>>> e1c6059602d7f8eba8b2f40bc22337736519ad57

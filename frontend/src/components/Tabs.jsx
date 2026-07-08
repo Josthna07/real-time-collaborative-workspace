@@ -6,20 +6,19 @@ function classNames(...classes) {
 
 export default function Tabs({ tabs, setSelected, children }) {
   return (
-    <div className='w-full px-1 sm:px-0'>
+    <div className="w-full px-1 sm:px-0">
       <Tab.Group>
-        <Tab.List className='flex space-x-6 rounded-xl p-1'>
+        <Tab.List className="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 w-fit">
           {tabs.map((tab, index) => (
             <Tab
               key={tab.title}
               onClick={() => setSelected(index)}
               className={({ selected }) =>
                 classNames(
-                  "w-fit flex items-center outline-none gap-2 px-3 py-2.5 text-base font-medium leading-5 bg-white",
-
+                  "flex items-center outline-none gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
                   selected
-                    ? "text-blue-700  border-b-2 border-blue-600"
-                    : "text-gray-800  hover:text-blue-800"
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-500 hover:text-gray-700",
                 )
               }
             >
@@ -28,7 +27,7 @@ export default function Tabs({ tabs, setSelected, children }) {
             </Tab>
           ))}
         </Tab.List>
-        <Tab.Panels className='w-full mt-2'>{children}</Tab.Panels>
+        <Tab.Panels className="w-full mt-6">{children}</Tab.Panels>
       </Tab.Group>
     </div>
   );

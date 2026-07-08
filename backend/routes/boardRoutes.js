@@ -1,44 +1,23 @@
 const express = require("express");
 
 const {
-
-createBoard,
-
-getBoards
-
-}=require("../controllers/boardController");
-
-
-const {
-
-protect
-
-}=require("../middleware/authMiddleware");
-
+  createBoard,
+  getBoards,
+  getBoardById,
+  updateBoard,
+  deleteBoard,
+} = require("../controllers/boardController");
 
 const router = express.Router();
 
+router.post("/", createBoard);
 
-router.post(
+router.get("/", getBoards);
 
-"/",
+router.get("/:id", getBoardById);
 
-protect,
+router.put("/:id", updateBoard);
 
-createBoard
-
-);
-
-
-router.get(
-
-"/:workspaceId",
-
-protect,
-
-getBoards
-
-);
-
+router.delete("/:id", deleteBoard);
 
 module.exports = router;

@@ -1,13 +1,29 @@
-import mongoose, { Schema } from "mongoose";
-const noticeSchema = new Schema(
-  {
-    team: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    text: { type: String },
-    task: { type: Schema.Types.ObjectId, ref: "Task" },
-    notiType: { type: String, default: "alert", enum: ["alert", "message"] },
-    isRead: [{ type: Schema.Types.ObjectId, ref: "User" }],
+const mongoose = require("mongoose");
+
+const notificationSchema = new mongoose.Schema(
+{
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
-  { timestamps: true },
+
+  message: {
+    type: String,
+    required: true,
+  },
+
+  isRead: {
+    type: Boolean,
+    default: false,
+  },
+},
+{
+  timestamps: true,
+}
 );
-const Notice = mongoose.model("Notice", noticeSchema);
-export default Notice;
+
+module.exports = mongoose.model(
+  "Notification",
+  notificationSchema
+);

@@ -21,6 +21,7 @@ const createWorkspace = async (req, res) => {
   }
 };
 
+
 // Get All Workspaces
 const getWorkspaces = async (req, res) => {
   try {
@@ -32,6 +33,7 @@ const getWorkspaces = async (req, res) => {
       success: true,
       workspaces,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -39,6 +41,7 @@ const getWorkspaces = async (req, res) => {
     });
   }
 };
+
 
 // Get Workspace By ID
 const getWorkspaceById = async (req, res) => {
@@ -47,6 +50,7 @@ const getWorkspaceById = async (req, res) => {
       .populate("owner", "name email")
       .populate("members", "name email");
 
+
     if (!workspace) {
       return res.status(404).json({
         success: false,
@@ -54,10 +58,13 @@ const getWorkspaceById = async (req, res) => {
       });
     }
 
+
     res.status(200).json({
       success: true,
       workspace,
     });
+
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -66,27 +73,33 @@ const getWorkspaceById = async (req, res) => {
   }
 };
 
+
 // Update Workspace
 const updateWorkspace = async (req, res) => {
   try {
+
     const workspace = await Workspace.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
 
+
     if (!workspace) {
       return res.status(404).json({
         success: false,
         message: "Workspace not found",
       });
     }
+
 
     res.status(200).json({
       success: true,
       message: "Workspace updated successfully",
       workspace,
     });
+
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -95,10 +108,13 @@ const updateWorkspace = async (req, res) => {
   }
 };
 
+
 // Delete Workspace
 const deleteWorkspace = async (req, res) => {
   try {
+
     const workspace = await Workspace.findByIdAndDelete(req.params.id);
+
 
     if (!workspace) {
       return res.status(404).json({
@@ -107,12 +123,18 @@ const deleteWorkspace = async (req, res) => {
       });
     }
 
-    await Board.deleteMany({ workspace: req.params.id });
+
+    await Board.deleteMany({
+      workspace: req.params.id,
+    });
+
 
     res.status(200).json({
       success: true,
       message: "Workspace deleted successfully",
     });
+
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -121,31 +143,46 @@ const deleteWorkspace = async (req, res) => {
   }
 };
 
+
 // Get Workspace Boards
 const getWorkspaceBoards = async (req, res) => {
+
   try {
+
     const boards = await Board.find({
       workspace: req.params.id,
     });
+
 
     res.status(200).json({
       success: true,
       boards,
     });
+
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
+
 };
+
 
 // Invite Member
 const inviteMember = async (req, res) => {
+
   try {
+
     const { memberId } = req.body;
 
+
     const workspace = await Workspace.findById(req.params.id);
+
+
     if (!workspace) {
       return res.status(404).json({
         success: false,
@@ -153,13 +190,17 @@ const inviteMember = async (req, res) => {
       });
     }
 
+
     const user = await User.findById(memberId);
+
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
+
 
     if (workspace.members.includes(memberId)) {
       return res.status(400).json({
@@ -168,37 +209,40 @@ const inviteMember = async (req, res) => {
       });
     }
 
+
     workspace.members.push(memberId);
+
     await workspace.save();
+
 
     res.status(200).json({
       success: true,
       message: "Member invited successfully",
       workspace,
     });
-<<<<<<< HEAD
+
+
   } catch (error) {
-=======
 
-    } catch (error) {
-
->>>>>>> 8612dce (Backend integration completed and stabilized)
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
+
 };
+
 
 // Export All
 module.exports = {
+
   createWorkspace,
   getWorkspaces,
   getWorkspaceById,
   updateWorkspace,
   deleteWorkspace,
   getWorkspaceBoards,
-
   inviteMember,
-};
 
+};

@@ -44,17 +44,29 @@ const AddTask = ({ open, setOpen, task = null }) => {
           ? team
           : teamMembers.slice(0, 1).map((member) => member._id);
 
-      const payload = {
-        ...data,
-        team: teamIds,
-        stage: stage.toLowerCase(),
-        priority: priority.toLowerCase(),
-        assets: Array.from(assets || []).map((file) => file.name),
-      };
+      // Build a real multipart/form-data payload so the selected files'
+      // actual binary content gets uploaded, not just their names.
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("date", data.date);
+      formData.append("stage", stage.toLowerCase());
+      formData.append("priority", priority.toLowerCase());
+      formData.append("team", JSON.stringify(teamIds));
+
+      // Keep any existing assets already on the task (relevant on update)
+      formData.append(
+        "existingAssets",
+        JSON.stringify(task?.assets || []),
+      );
+
+      // Attach newly selected files
+      Array.from(assets || []).forEach((file) => {
+        formData.append("assets", file);
+      });
 
       const res = task?._id
-        ? await updateTask({ id: task._id, data: payload }).unwrap()
-        : await createTask(payload).unwrap();
+        ? await updateTask({ id: task._id, data: formData }).unwrap()
+        : await createTask(formData).unwrap();
 
       toast.success(
         res?.message ||

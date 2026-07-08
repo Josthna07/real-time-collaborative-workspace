@@ -6,7 +6,18 @@ export const createTask = async (req, res) => {
   try {
     const { userId } = req.user || {};
 
-    const { title, team, stage, date, priority, assets } = req.body;
+    const { title, stage, date, priority } = req.body;
+
+    // team is sent as a JSON string when the request is multipart/form-data
+    const team = Array.isArray(req.body.team)
+      ? req.body.team
+      : JSON.parse(req.body.team || "[]");
+
+    // Build full, working URLs for each uploaded file instead of
+    // saving bare filenames that can never be resolved by the browser.
+    const assets = (req.files || []).map(
+      (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+    );
 
     let text = "New task has been assigned to you";
     if (team?.length > 1) {
@@ -133,7 +144,7 @@ export const dashboardStatistics = async (req, res) => {
         })
           .populate({
             path: "team",
-            select: "name role title email",
+            select: "name role title email isActive",
           })
           .sort({ _id: -1 })
       : await Task.find({
@@ -142,7 +153,7 @@ export const dashboardStatistics = async (req, res) => {
         })
           .populate({
             path: "team",
-            select: "name role title email",
+            select: "name role title email isActive",
           })
           .sort({ _id: -1 });
 
@@ -210,7 +221,7 @@ export const getTasks = async (req, res) => {
     let queryResult = Task.find(query)
       .populate({
         path: "team",
-        select: "name title email",
+        select: "name title email isActive",
       })
       .sort({ _id: -1 });
 
@@ -233,7 +244,7 @@ export const getTask = async (req, res) => {
     const task = await Task.findById(id)
       .populate({
         path: "team",
-        select: "name title role email",
+        select: "name title role email isActive",
       })
       .populate({
         path: "activities.by",
@@ -280,14 +291,28 @@ export const createSubTask = async (req, res) => {
 export const updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, date, team, stage, priority, assets } = req.body;
+    const { title, date, stage, priority } = req.body;
+
+    const team = Array.isArray(req.body.team)
+      ? req.body.team
+      : JSON.parse(req.body.team || "[]");
+
+    // Existing assets the user kept (sent back as a JSON string of URLs
+    // by the frontend), plus any newly uploaded files this time around.
+    const keptAssets = Array.isArray(req.body.existingAssets)
+      ? req.body.existingAssets
+      : JSON.parse(req.body.existingAssets || "[]");
+
+    const newAssets = (req.files || []).map(
+      (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+    );
 
     const task = await Task.findById(id);
 
     task.title = title;
     task.date = date;
     task.priority = priority.toLowerCase();
-    task.assets = assets;
+    task.assets = [...keptAssets, ...newAssets];
     task.stage = stage.toLowerCase();
     task.team = team;
 
@@ -295,7 +320,7 @@ export const updateTask = async (req, res) => {
 
     res
       .status(200)
-      .json({ status: true, message: "Task duplicated successfully." });
+      .json({ status: true, message: "Task updated successfully." });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -351,98 +376,4 @@ export const deleteRestoreTask = async (req, res) => {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
   }
-};
-
-const Task = require("../models/Task");
-
-const createTask = async (req, res) => {
-  try {
-    const task = await Task.create({
-      title: req.body.title,
-
-      description: req.body.description,
-
-      board: req.body.board,
-
-      priority: req.body.priority,
-
-      createdBy: req.user.id,
-    });
-
-    res.status(201).json(task);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-const getTasks = async (req, res) => {
-  try {
-    const tasks = await Task.find({
-      board: req.params.boardId,
-    });
-
-    res.json(tasks);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-const updateTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
-    }
-
-    task.status = req.body.status || task.status;
-
-    task.priority = req.body.priority || task.priority;
-
-    const updatedTask = await task.save();
-
-    res.json(updatedTask);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-const deleteTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
-    }
-
-    await task.deleteOne();
-
-    res.json({
-      message: "Task deleted",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-module.exports = {
-  createTask,
-
-  getTasks,
-
-  updateTask,
-
-  deleteTask,
 };

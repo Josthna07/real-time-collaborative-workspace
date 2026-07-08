@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import moment from "moment";
 import React, { useState } from "react";
-import { FaBug, FaTasks, FaThumbsUp, FaUser } from "react-icons/fa";
+import { FaBug, FaTasks, FaThumbsUp, FaUser, FaImage } from "react-icons/fa";
 import { GrInProgress } from "react-icons/gr";
 import {
   MdKeyboardArrowDown,
@@ -17,7 +17,11 @@ import Tabs from "../components/Tabs";
 import { PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
 import Loading from "../components/Loader";
 import Button from "../components/Button";
-import { useGetTaskQuery } from "../redux/slices/apiSlice";
+import { toast } from "sonner";
+import {
+  useGetTaskQuery,
+  usePostTaskActivityMutation,
+} from "../redux/slices/apiSlice";
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -77,6 +81,31 @@ const act_types = [
   "Bug",
   "Assigned",
 ];
+
+// Renders an asset image, but falls back to a visible placeholder
+// (instead of silently disappearing) if the URL fails to load —
+// e.g. an expired/blob URL, broken path, or CORS-blocked host.
+const AssetImage = ({ src, alt }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (failed || !src) {
+    return (
+      <div className='w-full h-28 md:h-36 2xl:h-52 rounded bg-gray-100 border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 gap-1'>
+        <FaImage size={24} />
+        <span className='text-xs px-2 text-center'>Image unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className='w-full rounded h-28 md:h-36 2xl:h-52 cursor-pointer transition-all duration-700 hover:scale-125 hover:z-50 object-cover'
+      onError={() => setFailed(true)}
+    />
+  );
+};
 
 const TaskDetails = () => {
   const { id } = useParams();
@@ -211,16 +240,7 @@ const TaskDetails = () => {
                 {task?.assets?.length > 0 ? (
                   <div className='w-full grid grid-cols-2 gap-4'>
                     {task.assets.map((el, index) => (
-                      <img
-                        key={index}
-                        src={el}
-                        alt={task?.title}
-                        className='w-full rounded h-28 md:h-36 2xl:h-52 cursor-pointer transition-all duration-700 hover:scale-125 hover:z-50'
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.style.display = "none";
-                        }}
-                      />
+                      <AssetImage key={index} src={el} alt={task?.title} />
                     ))}
                   </div>
                 ) : (
@@ -242,9 +262,31 @@ const TaskDetails = () => {
 const Activities = ({ activity, id }) => {
   const [selected, setSelected] = useState(act_types[0]);
   const [text, setText] = useState("");
-  const isLoading = false;
+  const [postTaskActivity, { isLoading }] = usePostTaskActivityMutation();
 
-  const handleSubmit = async () => {};
+  const handleSubmit = async () => {
+    if (!text.trim()) {
+      toast.error("Please write something before submitting.");
+      return;
+    }
+
+    try {
+      const res = await postTaskActivity({
+        id,
+        data: {
+          type: selected.toLowerCase(),
+          activity: text,
+        },
+      }).unwrap();
+
+      toast.success(res?.message || "Activity posted successfully.");
+      setText("");
+    } catch (err) {
+      toast.error(
+        err?.data?.message || err?.error || "Failed to post activity.",
+      );
+    }
+  };
 
   const Card = ({ item }) => {
     return (

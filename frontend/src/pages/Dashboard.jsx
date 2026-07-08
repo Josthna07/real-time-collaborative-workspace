@@ -15,7 +15,7 @@ import { Chart } from "../components/Chart";
 import { BGS, PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
 import UserInfo from "../components/UserInfo";
 import Loading from "../components/Loader";
-import { useGetTasksQuery } from "../redux/slices/apiSlice";
+import { useGetTasksQuery, useGetTeamListQuery } from "../redux/slices/apiSlice";
 
 const normalizeStage = (stage) => {
   const s = (stage || "").toLowerCase().trim();
@@ -139,7 +139,6 @@ const UserTableRow = ({ user }) => (
         </div>
         <div>
           <p className="text-gray-900">{user.name}</p>
-          <span className="text-xs text-gray-500">{user?.role}</span>
         </div>
       </div>
     </td>
@@ -156,7 +155,9 @@ const UserTableRow = ({ user }) => (
       </p>
     </td>
     <td className="py-3 text-sm text-gray-500">
-      {moment(user?.createdAt).fromNow()}
+      {user?.createdAt
+        ? moment(user.createdAt).fromNow()
+        : moment(new Date(parseInt(user?._id?.substring(0, 8), 16) * 1000)).fromNow()}
     </td>
   </tr>
 );
@@ -197,6 +198,7 @@ const Card = ({ label, count, bg, icon }) => (
 
 const Dashboard = () => {
   const { data: tasksResponse, isLoading } = useGetTasksQuery();
+  const { data: teamMembers = [] } = useGetTeamListQuery();
   const tasks = Array.isArray(tasksResponse?.tasks) ? tasksResponse.tasks : [];
 
   if (isLoading) {
@@ -251,13 +253,15 @@ const Dashboard = () => {
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 10);
 
-  const usersMap = {};
-  tasks.forEach((task) => {
-    task.team?.forEach((member) => {
-      if (member?._id) usersMap[member._id] = member;
-    });
-  });
-  const users = Object.values(usersMap);
+  
+  const getTimeFromObjectId = (id) => {
+    if (!id || typeof id !== "string" || id.length < 8) return 0;
+    return parseInt(id.substring(0, 8), 16);
+  };
+
+  const last5Members = [...teamMembers]
+    .sort((a, b) => getTimeFromObjectId(b._id) - getTimeFromObjectId(a._id))
+    .slice(0, 5);
 
   return (
     <div className="w-full px-4 md:px-6 py-6 space-y-8">
@@ -282,7 +286,7 @@ const Dashboard = () => {
         ) : (
           <>
             <TaskTable tasks={last10Task} />
-            <UserTable users={users} />
+            <UserTable users={last5Members} />
           </>
         )}
       </div>

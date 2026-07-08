@@ -1,156 +1,379 @@
-const Task = require("../models/Task");
+import Notice from "../models/notification.js";
+import Task from "../models/task.js";
+import User from "../models/user.js";
 
-const createTask = async (req, res) => {
+export const createTask = async (req, res) => {
   try {
+    const { userId } = req.user || {};
+
+    const { title, stage, date, priority } = req.body;
+
+    // team is sent as a JSON string when the request is multipart/form-data
+    const team = Array.isArray(req.body.team)
+      ? req.body.team
+      : JSON.parse(req.body.team || "[]");
+
+    // Build full, working URLs for each uploaded file instead of
+    // saving bare filenames that can never be resolved by the browser.
+    const assets = (req.files || []).map(
+      (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+    );
+
+    let text = "New task has been assigned to you";
+    if (team?.length > 1) {
+      text = text + ` and ${team?.length - 1} others.`;
+    }
+
+    text =
+      text +
+      ` The task priority is set a ${priority} priority, so check and act accordingly. The task date is ${new Date(
+        date,
+      ).toDateString()}. Thank you!!!`;
+
+    const activity = {
+      type: "assigned",
+      activity: text,
+      by: userId,
+    };
 
     const task = await Task.create({
-
-      title: req.body.title,
-
-      description: req.body.description,
-
-      board: req.body.board,
-
-      priority: req.body.priority,
-
-      createdBy: req.user.id
-
+      title,
+      team,
+      stage: stage.toLowerCase(),
+      date,
+      priority: priority.toLowerCase(),
+      assets,
+      activities: activity,
     });
 
-    res.status(201).json(task);
-
-  }
-
-  catch (error) {
-
-    res.status(500).json({
-
-      message: error.message
-
+    await Notice.create({
+      team,
+      text,
+      task: task._id,
     });
 
+    res
+      .status(200)
+      .json({ status: true, task, message: "Task created successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
   }
-
 };
 
-const getTasks = async (req, res) => {
-
+export const duplicateTask = async (req, res) => {
   try {
+    const { id } = req.params;
 
-    const tasks = await Task.find({
+    const task = await Task.findById(id);
 
-      board: req.params.boardId
-
+    const newTask = await Task.create({
+      ...task,
+      title: task.title + " - Duplicate",
     });
 
-    res.json(tasks);
+    newTask.team = task.team;
+    newTask.subTasks = task.subTasks;
+    newTask.assets = task.assets;
+    newTask.priority = task.priority;
+    newTask.stage = task.stage;
 
-  }
+    await newTask.save();
 
-  catch (error) {
-
-    res.status(500).json({
-
-      message: error.message
-
-    });
-
-  }
-
-};
-
-const updateTask = async (req, res) => {
-
-  try {
-
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-
-      return res.status(404).json({
-
-        message: "Task not found"
-
-      });
-
+    //alert users of the task
+    let text = "New task has been assigned to you";
+    if (task.team.length > 1) {
+      text = text + ` and ${task.team.length - 1} others.`;
     }
 
-    task.status =
+    text =
+      text +
+      ` The task priority is set a ${
+        task.priority
+      } priority, so check and act accordingly. The task date is ${task.date.toDateString()}. Thank you!!!`;
 
-      req.body.status || task.status;
-
-    task.priority =
-
-      req.body.priority || task.priority;
-
-    const updatedTask =
-
-      await task.save();
-
-    res.json(updatedTask);
-
-  }
-
-  catch (error) {
-
-    res.status(500).json({
-
-      message: error.message
-
+    await Notice.create({
+      team: task.team,
+      text,
+      task: newTask._id,
     });
 
+    res
+      .status(200)
+      .json({ status: true, message: "Task duplicated successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
   }
-
 };
 
-const deleteTask = async (req, res) => {
-
+export const postTaskActivity = async (req, res) => {
   try {
+    const { id } = req.params;
+    const { userId } = req.user;
+    const { type, activity } = req.body;
 
-    const task =
+    const task = await Task.findById(id);
 
-      await Task.findById(req.params.id);
+    const data = {
+      type,
+      activity,
+      by: userId,
+    };
 
-    if (!task) {
+    task.activities.push(data);
 
-      return res.status(404).json({
+    await task.save();
 
-        message: "Task not found"
+    res
+      .status(200)
+      .json({ status: true, message: "Activity posted successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
 
-      });
+export const dashboardStatistics = async (req, res) => {
+  try {
+    const { userId, isAdmin } = req.user;
 
+    const allTasks = isAdmin
+      ? await Task.find({
+          isTrashed: false,
+        })
+          .populate({
+            path: "team",
+            select: "name role title email isActive",
+          })
+          .sort({ _id: -1 })
+      : await Task.find({
+          isTrashed: false,
+          team: { $all: [userId] },
+        })
+          .populate({
+            path: "team",
+            select: "name role title email isActive",
+          })
+          .sort({ _id: -1 });
+
+    const users = await User.find({ isActive: true })
+      .select("name title role isAdmin createdAt")
+      .limit(10)
+      .sort({ _id: -1 });
+
+    //   group task by stage and calculate counts
+    const groupTaskks = allTasks.reduce((result, task) => {
+      const stage = task.stage;
+
+      if (!result[stage]) {
+        result[stage] = 1;
+      } else {
+        result[stage] += 1;
+      }
+
+      return result;
+    }, {});
+
+    // Group tasks by priority
+    const groupData = Object.entries(
+      allTasks.reduce((result, task) => {
+        const { priority } = task;
+
+        result[priority] = (result[priority] || 0) + 1;
+        return result;
+      }, {}),
+    ).map(([name, total]) => ({ name, total }));
+
+    // calculate total tasks
+    const totalTasks = allTasks?.length;
+    const last10Task = allTasks?.slice(0, 10);
+
+    const summary = {
+      totalTasks,
+      last10Task,
+      users: isAdmin ? users : [],
+      tasks: groupTaskks,
+      graphData: groupData,
+    };
+
+    res.status(200).json({
+      status: true,
+      message: "Successfully",
+      ...summary,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const getTasks = async (req, res) => {
+  try {
+    const { stage, isTrashed } = req.query;
+
+    let query = { isTrashed: isTrashed ? true : false };
+
+    if (stage) {
+      query.stage = stage;
     }
 
-    await task.deleteOne();
+    let queryResult = Task.find(query)
+      .populate({
+        path: "team",
+        select: "name title email isActive",
+      })
+      .sort({ _id: -1 });
 
-    res.json({
+    const tasks = await queryResult;
 
-      message: "Task deleted"
-
+    res.status(200).json({
+      status: true,
+      tasks,
     });
-
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
   }
-
-  catch (error) {
-
-    res.status(500).json({
-
-      message: error.message
-
-    });
-
-  }
-
 };
 
-module.exports = {
+export const getTask = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-  createTask,
+    const task = await Task.findById(id)
+      .populate({
+        path: "team",
+        select: "name title role email isActive",
+      })
+      .populate({
+        path: "activities.by",
+        select: "name",
+      });
 
-  getTasks,
+    res.status(200).json({
+      status: true,
+      task,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
 
-  updateTask,
+export const createSubTask = async (req, res) => {
+  try {
+    const { title, tag, date } = req.body;
 
-  deleteTask
+    const { id } = req.params;
 
+    const newSubTask = {
+      title,
+      date,
+      tag,
+    };
+
+    const task = await Task.findById(id);
+
+    task.subTasks.push(newSubTask);
+
+    await task.save();
+
+    res
+      .status(200)
+      .json({ status: true, message: "SubTask added successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, date, stage, priority } = req.body;
+
+    const team = Array.isArray(req.body.team)
+      ? req.body.team
+      : JSON.parse(req.body.team || "[]");
+
+    // Existing assets the user kept (sent back as a JSON string of URLs
+    // by the frontend), plus any newly uploaded files this time around.
+    const keptAssets = Array.isArray(req.body.existingAssets)
+      ? req.body.existingAssets
+      : JSON.parse(req.body.existingAssets || "[]");
+
+    const newAssets = (req.files || []).map(
+      (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+    );
+
+    const task = await Task.findById(id);
+
+    task.title = title;
+    task.date = date;
+    task.priority = priority.toLowerCase();
+    task.assets = [...keptAssets, ...newAssets];
+    task.stage = stage.toLowerCase();
+    task.team = team;
+
+    await task.save();
+
+    res
+      .status(200)
+      .json({ status: true, message: "Task updated successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const trashTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await Task.findById(id);
+
+    task.isTrashed = true;
+
+    await task.save();
+
+    res.status(200).json({
+      status: true,
+      message: `Task trashed successfully.`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const deleteRestoreTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { actionType } = req.query;
+
+    if (actionType === "delete") {
+      await Task.findByIdAndDelete(id);
+    } else if (actionType === "deleteAll") {
+      await Task.deleteMany({ isTrashed: true });
+    } else if (actionType === "restore") {
+      const resp = await Task.findById(id);
+
+      resp.isTrashed = false;
+      resp.save();
+    } else if (actionType === "restoreAll") {
+      await Task.updateMany(
+        { isTrashed: true },
+        { $set: { isTrashed: false } },
+      );
+    }
+
+    res.status(200).json({
+      status: true,
+      message: `Operation performed successfully.`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
 };

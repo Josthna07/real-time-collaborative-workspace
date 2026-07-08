@@ -5,7 +5,7 @@ import Notice from "../models/notification.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, isAdmin, role, title } = req.body;
+    const { name, email, password, role, title, isAdmin } = req.body;
 
     const userExist = await User.findOne({ email });
 
@@ -16,17 +16,32 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    let finalIsAdmin = false;
+
+    if (isAdmin) {
+      const adminCount = await User.countDocuments({ isAdmin: true });
+
+      if (adminCount >= 2) {
+        return res.status(400).json({
+          status: false,
+          message: "Admin limit reached. Only 2 admins are allowed.",
+        });
+      }
+
+      finalIsAdmin = true;
+    }
+
     const user = await User.create({
       name,
       email,
       password,
-      isAdmin,
+      isAdmin: finalIsAdmin,
       role,
       title,
     });
 
     if (user) {
-      isAdmin ? createJWT(res, user._id) : null;
+      finalIsAdmin ? createJWT(res, user._id) : null;
 
       user.password = undefined;
 
@@ -83,7 +98,7 @@ export const loginUser = async (req, res) => {
 export const logoutUser = async (req, res) => {
   try {
     res.cookie("token", "", {
-      htttpOnly: true,
+      httpOnly: true,
       expires: new Date(0),
     });
 
@@ -96,7 +111,7 @@ export const logoutUser = async (req, res) => {
 
 export const getTeamList = async (req, res) => {
   try {
-    const users = await User.find().select("name title role email isActive");
+    const users = await User.find().select("name title role email isActive isAdmin");
 
     res.status(200).json(users);
   } catch (error) {

@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
+import path from "path";
 import { errorHandler, routeNotFound } from "./middlewares/errorHandler.js";
 import routes from "./routes/index.js";
 import { dbConnection } from "./utils/index.js";
@@ -24,6 +25,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 app.use(morgan("dev"));
+
+// Serve uploaded task assets as static files, e.g.
+// http://localhost:8800/uploads/1234-567.jpg
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use("/api", routes);
 app.use(routeNotFound);

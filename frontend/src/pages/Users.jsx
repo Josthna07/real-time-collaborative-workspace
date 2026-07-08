@@ -14,59 +14,61 @@ import {
 import { useSelector } from "react-redux";
 
 const TableHeader = () => (
-  <thead className="border-b border-gray-300">
-    <tr className="text-black text-left">
-      <th className="py-2">Full Name</th>
-      <th className="py-2">Title</th>
-      <th className="py-2">Email</th>
-      <th className="py-2">Role</th>
-      <th className="py-2">Active</th>
+  <thead className="border-b-2 border-gray-200">
+    <tr className="text-gray-500 text-left text-sm uppercase tracking-wide">
+      <th className="py-4 pl-2">Full Name</th>
+      <th className="py-4">Title</th>
+      <th className="py-4">Email</th>
+      <th className="py-4">Role</th>
+      <th className="py-4">Status</th>
+      <th className="py-4 pr-2 text-right">Actions</th>
     </tr>
   </thead>
 );
 
 const TableRow = ({ user, onEdit, onDelete }) => (
-  <tr className="border-b border-gray-200 text-gray-600 hover:bg-gray-400/10">
-    <td className="p-2">
+  <tr className="border-b border-gray-100 text-gray-700 hover:bg-gray-50 transition-colors">
+    <td className="py-4 pl-2">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full text-white flex items-center justify-center text-sm bg-blue-700">
-          <span className="text-xs md:text-sm text-center">
-            {getInitials(user.name)}
-          </span>
+        <div className="w-9 h-9 shrink-0 rounded-full text-white flex items-center justify-center text-xs font-semibold bg-blue-700">
+          {getInitials(user.name)}
         </div>
-        {user.name}
+        <span className="font-medium text-gray-900">{user.name}</span>
       </div>
     </td>
 
-    <td className="p-2">{user.title}</td>
-    <td className="p-2">{user.email || "user.emal.com"}</td>
-    <td className="p-2">{user.role}</td>
+    <td className="py-4">{user.title}</td>
+    <td className="py-4 text-gray-500">{user.email || "user@email.com"}</td>
+    <td className="py-4">{user.role}</td>
 
-    <td>
-      <button
+    <td className="py-4">
+      <span
         className={clsx(
-          "w-fit px-4 py-1 rounded-full",
-          user?.isActive ? "bg-blue-200" : "bg-yellow-100",
+          "inline-block px-3 py-1 text-xs font-medium rounded-full",
+          user?.isActive
+            ? "bg-blue-100 text-blue-700"
+            : "bg-yellow-100 text-yellow-700",
         )}
       >
         {user?.isActive ? "Active" : "Disabled"}
-      </button>
+      </span>
     </td>
 
-    <td className="p-2 flex gap-4 justify-end">
-      <Button
-        className="text-blue-600 hover:text-blue-500 font-semibold sm:px-0"
-        label="Edit"
-        type="button"
-        onClick={() => onEdit(user)}
-      />
-
-      <Button
-        className="text-red-700 hover:text-red-500 font-semibold sm:px-0"
-        label="Delete"
-        type="button"
-        onClick={() => onDelete(user?._id)}
-      />
+    <td className="py-4 pr-2">
+      <div className="flex items-center justify-end gap-4">
+        <button
+          onClick={() => onEdit(user)}
+          className="text-blue-600 hover:text-blue-700 text-sm font-semibold"
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => onDelete(user?._id)}
+          className="text-red-600 hover:text-red-700 text-sm font-semibold"
+        >
+          Delete
+        </button>
+      </div>
     </td>
   </tr>
 );
@@ -81,8 +83,7 @@ const Users = () => {
   const { data: users = [], isLoading, refetch } = useGetTeamListQuery();
   const { searchTerm } = useSelector((state) => state.auth);
 
-  const [deleteUserProfile, { isLoading: isDeleting }] =
-    useDeleteUserProfileMutation();
+  const [deleteUserProfile] = useDeleteUserProfileMutation();
 
   const filteredUsers = searchTerm
     ? users.filter((user) => {
@@ -123,13 +124,13 @@ const Users = () => {
 
   return (
     <>
-      <div className="w-full md:px-1 px-0 mb-6">
-        <div className="flex items-center justify-between mb-8">
-          <Title title="  Team Members" />
+      <div className="w-full px-4 md:px-6 mb-6">
+        <div className="flex items-center justify-between mb-8 gap-4">
+          <Title title="Team Members" />
           <Button
             label="Add New User"
             icon={<IoMdAdd className="text-lg" />}
-            className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md 2xl:py-2.5"
+            className="flex flex-row-reverse gap-2 items-center bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-semibold hover:bg-blue-700 shrink-0"
             onClick={() => {
               setSelectedUser(null);
               setOpen(true);
@@ -137,9 +138,9 @@ const Users = () => {
           />
         </div>
 
-        <div className="bg-white px-2 md:px-4 py-4 shadow-md rounded">
+        <div className="bg-white px-4 md:px-6 py-6 shadow-sm rounded-lg border border-gray-100">
           <div className="overflow-x-auto">
-            <table className="w-full mb-5">
+            <table className="w-full min-w-175 border-separate border-spacing-0">
               <TableHeader />
               <tbody>
                 {filteredUsers?.map((user, index) => (
@@ -152,7 +153,7 @@ const Users = () => {
                 ))}
                 {!isLoading && filteredUsers.length < 1 && (
                   <tr>
-                    <td className="py-4 text-gray-500" colSpan={6}>
+                    <td className="py-6 text-center text-gray-400" colSpan={6}>
                       No team members found.
                     </td>
                   </tr>

@@ -7,7 +7,7 @@ import path from "path";
 import { errorHandler, routeNotFound } from "./middlewares/errorHandler.js";
 import routes from "./routes/index.js";
 import { dbConnection } from "./utils/index.js";
-const PORT = process.env.PORT || 8800;
+const PORT = process.env.PORT || 5000;
 dotenv.config();
 dbConnection();
 
@@ -27,7 +27,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 
 // Serve uploaded task assets as static files, e.g.
-// http://localhost:8800/uploads/1234-567.jpg
+// http://localhost:5000/uploads/1234-567.jpg
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use("/api", routes);

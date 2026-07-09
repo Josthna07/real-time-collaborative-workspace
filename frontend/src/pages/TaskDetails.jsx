@@ -72,6 +72,7 @@ const TASKTYPEICON = {
     </div>
   ),
 };
+export default TaskDetails;
 
 const act_types = [
   "Started",
@@ -146,7 +147,7 @@ const TaskDetails = () => {
                     <div
                       className={clsx(
                         "w-4 h-4 rounded-full",
-                        TASK_TYPE[task.stage]
+                        TASK_TYPE?.[task?.stage] || "bg-gray-400"
                       )}
                     />
                     <span className='text-black uppercase'>{task?.stage}</span>
@@ -176,7 +177,8 @@ const TaskDetails = () => {
                     TASK TEAM
                   </p>
                   <div className='space-y-3'>
-                    {task?.team?.map((m, index) => (
+                    {Array.isArray(task?.team) &&
+                     task.team.map((m, index) => (
                       <div
                         key={index}
                         className='flex gap-4 py-2 items-center border-t border-gray-200'
@@ -250,7 +252,9 @@ const TaskDetails = () => {
             </div>
           </>
         ) : (
+          
           <>
+        
             <Activities activity={task?.activities} id={id} />
           </>
         )}
@@ -367,4 +371,4 @@ const Activities = ({ activity, id }) => {
   );
 };
 
-export default TaskDetails;
+

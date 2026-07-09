@@ -10,7 +10,11 @@ const baseQuery = fetchBaseQuery({
 export const apiSlice = createApi({
   baseQuery,
   tagTypes: ["Task", "User", "Notification"],
+
   endpoints: (builder) => ({
+
+    // TASK APIs
+
     createTask: builder.mutation({
       query: (data) => ({
         url: "/task/create",
@@ -19,8 +23,11 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
     getTasks: builder.query({
       query: (params) => {
+
         const searchParams = new URLSearchParams();
 
         if (params?.isTrashed) {
@@ -33,14 +40,21 @@ export const apiSlice = createApi({
 
         const queryString = searchParams.toString();
 
-        return queryString ? `/task?${queryString}` : "/task";
+        return queryString
+          ? `/task?${queryString}`
+          : "/task";
       },
+
       providesTags: ["Task"],
     }),
+
+
     getTask: builder.query({
       query: (id) => `/task/${id}`,
       providesTags: ["Task"],
     }),
+
+
     updateTask: builder.mutation({
       query: ({ id, data }) => ({
         url: `/task/update/${id}`,
@@ -49,6 +63,8 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
     trashTask: builder.mutation({
       query: (id) => ({
         url: `/task/${id}`,
@@ -56,6 +72,8 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
     createSubTask: builder.mutation({
       query: ({ id, data }) => ({
         url: `/task/create-subtask/${id}`,
@@ -64,6 +82,8 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
     postTaskActivity: builder.mutation({
       query: ({ id, data }) => ({
         url: `/task/activity/${id}`,
@@ -72,6 +92,8 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
     duplicateTask: builder.mutation({
       query: (id) => ({
         url: `/task/duplicate/${id}`,
@@ -79,6 +101,8 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
     deleteRestoreTask: builder.mutation({
       query: ({ id, actionType }) => ({
         url: id
@@ -88,85 +112,166 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+
+
+
+    // AUTH APIs (FIXED)
+
     loginUser: builder.mutation({
+
       query: (data) => ({
-        url: "/user/login",
+        url: "/auth/login",
         method: "POST",
         body: data,
       }),
+
     }),
+
+
     logoutUser: builder.mutation({
+
       query: () => ({
-        url: "/user/logout",
+        url: "/auth/logout",
         method: "POST",
       }),
+
     }),
+
+
     registerUser: builder.mutation({
+
       query: (data) => ({
-        url: "/user/register",
+        url: "/auth/register",
         method: "POST",
         body: data,
       }),
+
       invalidatesTags: ["User"],
+
     }),
+
+
+
+    // USER APIs
+
     getTeamList: builder.query({
+
       query: () => "/user/get-team",
+
       providesTags: ["User"],
+
     }),
+
+
+
     updateUserProfile: builder.mutation({
+
       query: (data) => ({
         url: "/user/profile",
         method: "PUT",
         body: data,
       }),
+
       invalidatesTags: ["User"],
+
     }),
+
+
+
     activateUserProfile: builder.mutation({
+
       query: ({ id, isActive }) => ({
         url: `/user/${id}`,
         method: "PUT",
         body: { isActive },
       }),
+
       invalidatesTags: ["User"],
+
     }),
+
+
+
     deleteUserProfile: builder.mutation({
+
       query: (id) => ({
         url: `/user/${id}`,
         method: "DELETE",
       }),
+
       invalidatesTags: ["User"],
+
     }),
+
+
+
     getNotifications: builder.query({
+
       query: () => "/user/notifications",
+
       providesTags: ["Notification"],
+
     }),
+
+
+
     markNotiAsRead: builder.mutation({
+
       query: ({ id, isReadType }) => ({
         url: `/user/read-noti?id=${id || ""}&isReadType=${isReadType || ""}`,
         method: "PUT",
       }),
+
       invalidatesTags: ["Notification"],
+
     }),
+
   }),
+
 });
 
+
+
 export const {
+
   useCreateTaskMutation,
+
   useGetTasksQuery,
+
   useGetTaskQuery,
+
   useUpdateTaskMutation,
+
   useTrashTaskMutation,
+
   useCreateSubTaskMutation,
+
   usePostTaskActivityMutation,
+
   useDuplicateTaskMutation,
+
   useDeleteRestoreTaskMutation,
+
+
   useRegisterUserMutation,
+
   useLoginUserMutation,
+
   useLogoutUserMutation,
+
+
   useGetTeamListQuery,
+
   useUpdateUserProfileMutation,
+
   useActivateUserProfileMutation,
+
   useDeleteUserProfileMutation,
+
+
   useGetNotificationsQuery,
+
   useMarkNotiAsReadMutation,
+
+
 } = apiSlice;

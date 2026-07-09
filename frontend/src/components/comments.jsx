@@ -13,8 +13,28 @@ const Comments = ({ taskId, currentUser }) => {
   const commentsEndRef = useRef(null);
 
 
-  // Fetch comments + realtime listener
+  // Fetch comments + socket listener
   useEffect(() => {
+
+    const fetchComments = async () => {
+      try {
+
+        const res = await axios.get(
+          `http://localhost:5000/api/comments/${taskId}`
+        );
+
+        setComments(res.data.comments || []);
+
+      } catch (error) {
+
+        console.error(
+          "Error fetching comments:",
+          error
+        );
+
+      }
+    };
+
 
     fetchComments();
 
@@ -23,13 +43,24 @@ const Comments = ({ taskId, currentUser }) => {
       "receiveComment",
       (newComment) => {
 
-        // Add only for current task
         if(newComment.task === taskId){
 
-          setComments((prev)=>[
-            ...prev,
-            newComment
-          ]);
+          setComments((prev)=>{
+
+            const exists = prev.some(
+              (item)=>item._id === newComment._id
+            );
+
+            if(exists){
+              return prev;
+            }
+
+            return [
+              ...prev,
+              newComment
+            ];
+
+          });
 
         }
 
@@ -51,7 +82,7 @@ const Comments = ({ taskId, currentUser }) => {
 
 
   // Auto scroll
-  useEffect(() => {
+  useEffect(()=>{
 
     commentsEndRef.current?.scrollIntoView({
       behavior:"smooth"
@@ -61,58 +92,23 @@ const Comments = ({ taskId, currentUser }) => {
 
 
 
-  // Fetch comments
-  const fetchComments = async()=>{
-
-    try{
-
-      const res = await axios.get(
-        `http://localhost:5000/api/comments/${taskId}`
-      );
-
-
-      setComments(
-        res.data.comments || []
-      );
-
-
-    }catch(error){
-
-      console.error(
-        "Error fetching comments:",
-        error
-      );
-
-    }
-
-  };
-
-
-
   // Send comment
   const sendComment = async()=>{
-
 
     if(!comment.trim()) return;
 
 
     try{
 
-
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/comments",
-        {
-          task: taskId,
-          user: currentUser._id,
-          comment: comment.trim()
-        }
-      );
-
-
-      // realtime event
-      socket.emit(
-        "sendComment",
-        res.data.comment
+        <Comments
+           taskId={task._id}
+            currentUser={{
+            _id: "6870abc123456789def12345",
+           name: "Srushti"
+      }}
+/>
       );
 
 
@@ -137,125 +133,103 @@ const Comments = ({ taskId, currentUser }) => {
     <div className="bg-white rounded-2xl shadow-lg border p-6">
 
 
-      {/* Header */}
-      <div className="mb-5">
-
-        <h2 className="text-xl font-bold text-slate-800">
-
-          Comments ({comments.length})
-
-        </h2>
-
-      </div>
+      <h2 className="text-xl font-bold text-slate-800 mb-5">
+        Comments ({comments.length})
+      </h2>
 
 
 
-      {/* Comments */}
       <div className="max-h-[450px] overflow-y-auto space-y-4 pr-2">
 
 
         <AnimatePresence>
 
-          {
-            comments.map((item,index)=>(
+          {comments.map((item,index)=>(
 
-              <motion.div
+            <motion.div
 
-                key={item._id || index}
+              key={item._id || index}
 
-                initial={{
-                  opacity:0,
-                  y:15
-                }}
+              initial={{
+                opacity:0,
+                y:15
+              }}
 
-                animate={{
-                  opacity:1,
-                  y:0
-                }}
+              animate={{
+                opacity:1,
+                y:0
+              }}
 
-                transition={{
-                  duration:0.25
-                }}
+              transition={{
+                duration:0.25
+              }}
 
-                className="flex gap-3"
+              className="flex gap-3"
 
-              >
+            >
 
 
-                {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
 
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+                {
+                  item.user?.name
+                  ?.charAt(0)
+                  ?.toUpperCase()
+                  ||
+                  "U"
+                }
 
-                  {
-                    item.user?.name
-                    ?.charAt(0)
-                    ?.toUpperCase()
-                    ||
-                    "U"
-                  }
-
-                </div>
+              </div>
 
 
 
-                {/* Comment Content */}
+              <div className="flex-1">
 
-                <div className="flex-1">
-
-                  <div className="bg-slate-50 border rounded-xl p-3">
+                <div className="bg-slate-50 border rounded-xl p-3">
 
 
-                    <div className="flex justify-between">
+                  <div className="flex justify-between">
+
+                    <h4 className="font-semibold text-slate-800">
+
+                      {
+                        item.user?.name ||
+                        "User"
+                      }
+
+                    </h4>
 
 
-                      <h4 className="font-semibold text-slate-800">
+                    <span className="text-xs text-gray-500">
 
-                        {
-                          item.user?.name ||
-                          "User"
-                        }
+                      {
+                        new Date(
+                          item.createdAt
+                        ).toLocaleString()
+                      }
 
-                      </h4>
-
-
-
-                      <span className="text-xs text-gray-500">
-
-                        {
-                          new Date(
-                            item.createdAt
-                          ).toLocaleString()
-                        }
-
-                      </span>
-
-
-                    </div>
-
-
-
-                    <p className="mt-2 text-slate-700">
-
-                      {item.comment}
-
-                    </p>
+                    </span>
 
 
                   </div>
 
 
+
+                  <p className="mt-2 text-slate-700">
+                    {item.comment}
+                  </p>
+
+
                 </div>
 
+              </div>
 
-              </motion.div>
 
+            </motion.div>
 
-            ))
-          }
-
+          ))}
 
         </AnimatePresence>
-
 
 
         <div ref={commentsEndRef}/>
@@ -265,8 +239,6 @@ const Comments = ({ taskId, currentUser }) => {
 
 
 
-
-      {/* Input */}
 
       <div className="mt-5 flex gap-3">
 
@@ -306,7 +278,6 @@ const Comments = ({ taskId, currentUser }) => {
           <FaPaperPlane/>
 
           Send
-
 
         </motion.button>
 

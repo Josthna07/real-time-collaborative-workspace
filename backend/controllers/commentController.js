@@ -21,14 +21,22 @@ const createComment = async (req, res) => {
     const populatedComment = await Comment.findById(newComment._id)
       .populate("user", "name email");
 
-    // Realtime event
-    req.io.emit("receiveComment", populatedComment);
+
+    // Send realtime update if socket is available
+    if (global.io) {
+      global.io.emit(
+        "receiveComment",
+        populatedComment
+      );
+    }
+
 
     res.status(201).json({
       success: true,
       message: "Comment added successfully",
       comment: populatedComment,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -37,26 +45,34 @@ const createComment = async (req, res) => {
   }
 };
 
+
 // Get Comments
 const getComments = async (req, res) => {
   try {
+
     const comments = await Comment.find({
       task: req.params.taskId,
     })
       .populate("user", "name email")
       .sort({ createdAt: -1 });
 
+
     res.status(200).json({
       success: true,
       comments,
     });
+
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
+
 
 module.exports = {
   createComment,

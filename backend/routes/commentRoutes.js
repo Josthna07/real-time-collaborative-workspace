@@ -1,4 +1,5 @@
 const express = require("express");
+
 const {
   createComment,
   getComments,
@@ -6,10 +7,20 @@ const {
 
 const router = express.Router();
 
-// Create comment
+
+// =====================================
+// COMMENT ROUTES
+// =====================================
+
+
+// Create a new comment
+// POST /api/comments
 router.post("/", createComment);
 
-// Get comments by task
+
+// Get all comments of a task
+// GET /api/comments/:taskId
 router.get("/:taskId", getComments);
+
 
 module.exports = router;

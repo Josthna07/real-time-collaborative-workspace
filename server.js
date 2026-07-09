@@ -23,6 +23,23 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Create HTTP Server
+const server = http.createServer(app);
+
+// Socket.IO Setup
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
+
+// Make io available in controllers
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/workspaces", workspaceRoutes);
@@ -35,42 +52,16 @@ app.get("/", (req, res) => {
   res.send("Real-Time Collaborative Workspace Backend Running...");
 });
 
-// Create HTTP Server
-const server = http.createServer(app);
-
-// Socket.IO Setup
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  },
-});
-
 // Socket Events
 io.on("connection", (socket) => {
   console.log("User Connected:", socket.id);
 
-  // Real-Time Comment
   socket.on("sendComment", (data) => {
-    console.log("New Comment:", data);
-
-    io.emit("receiveComment", {
-      task: data.task,
-      user: data.user,
-      comment: data.comment,
-      createdAt: new Date(),
-    });
+    io.emit("receiveComment", data);
   });
 
-  // Real-Time Notification
   socket.on("sendNotification", (data) => {
-    console.log("New Notification:", data);
-
-    io.emit("receiveNotification", {
-      user: data.user,
-      message: data.message,
-      createdAt: new Date(),
-    });
+    io.emit("receiveNotification", data);
   });
 
   socket.on("disconnect", () => {

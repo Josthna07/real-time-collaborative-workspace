@@ -18,10 +18,16 @@ const createComment = async (req, res) => {
       comment,
     });
 
+    const populatedComment = await Comment.findById(newComment._id)
+      .populate("user", "name email");
+
+    // Realtime event
+    req.io.emit("receiveComment", populatedComment);
+
     res.status(201).json({
       success: true,
       message: "Comment added successfully",
-      comment: newComment,
+      comment: populatedComment,
     });
   } catch (error) {
     res.status(500).json({
@@ -31,7 +37,7 @@ const createComment = async (req, res) => {
   }
 };
 
-// Get Comments for a Task
+// Get Comments
 const getComments = async (req, res) => {
   try {
     const comments = await Comment.find({

@@ -7,7 +7,7 @@ import path from "path";
 import { errorHandler, routeNotFound } from "./middlewares/errorHandler.js";
 import routes from "./routes/index.js";
 import { dbConnection } from "./utils/index.js";
-const PORT = process.env.PORT || 8800;
+const PORT = process.env.PORT || 5000;
 dotenv.config();
 dbConnection();
 

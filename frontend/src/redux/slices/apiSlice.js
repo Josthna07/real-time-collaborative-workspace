@@ -235,43 +235,21 @@ export const apiSlice = createApi({
 export const {
 
   useCreateTaskMutation,
-
   useGetTasksQuery,
-
   useGetTaskQuery,
-
   useUpdateTaskMutation,
-
   useTrashTaskMutation,
-
   useCreateSubTaskMutation,
-
   usePostTaskActivityMutation,
-
   useDuplicateTaskMutation,
-
   useDeleteRestoreTaskMutation,
-
-
   useRegisterUserMutation,
-
   useLoginUserMutation,
-
   useLogoutUserMutation,
-
-
   useGetTeamListQuery,
-
   useUpdateUserProfileMutation,
-
   useActivateUserProfileMutation,
-
   useDeleteUserProfileMutation,
-
-
   useGetNotificationsQuery,
-
   useMarkNotiAsReadMutation,
-
-
-} = apiSlice;
+}=apiSlice;

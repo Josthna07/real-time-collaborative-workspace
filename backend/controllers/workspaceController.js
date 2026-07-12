@@ -72,7 +72,7 @@ const updateWorkspace = async (req, res) => {
     const workspace = await Workspace.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true },
     );
 
     if (!workspace) {
@@ -176,29 +176,19 @@ const inviteMember = async (req, res) => {
       message: "Member invited successfully",
       workspace,
     });
-<<<<<<< HEAD
   } catch (error) {
-=======
-
-    } catch (error) {
-
->>>>>>> 8612dce (Backend integration completed and stabilized)
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
-
-// Export All
 module.exports = {
   createWorkspace,
   getWorkspaces,
   getWorkspaceById,
   updateWorkspace,
   deleteWorkspace,
-  getWorkspaceBoards,
-
   inviteMember,
+  getWorkspaceBoards,
 };
-

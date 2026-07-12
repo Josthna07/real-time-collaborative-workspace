@@ -1,41 +1,28 @@
-import express from "express";
-import {
-  createSubTask,
+const express = require("express");
+
+const {
   createTask,
-  dashboardStatistics,
-  deleteRestoreTask,
-  duplicateTask,
-  getTask,
   getTasks,
-  postTaskActivity,
-  trashTask,
+  getTaskById,
   updateTask,
-} from "../controllers/taskController.js";
-import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
-import { upload } from "../middlewares/uploadMiddleware.js";
+  deleteTask,
+} = require("../controllers/taskController");
 
 const router = express.Router();
 
-router.post("/create", upload.array("assets", 10), createTask);
-router.post("/duplicate/:id", protectRoute, isAdminRoute, duplicateTask);
-router.post("/activity/:id", protectRoute, postTaskActivity);
+// Create Task
+router.post("/", createTask);
 
-router.get("/dashboard", protectRoute, dashboardStatistics);
+// Get All Tasks
 router.get("/", getTasks);
-router.get("/:id", getTask);
 
-router.put("/create-subtask/:id", protectRoute, isAdminRoute, createSubTask);
-router.put(
-  "/update/:id",
-  protectRoute,
-  isAdminRoute,
-  upload.array("assets", 10),
-  updateTask,
-);
-router.put("/:id", trashTask);
+// Get Task By ID
+router.get("/:id", getTaskById);
 
-router.delete("/delete-restore", deleteRestoreTask);
+// Update Task
+router.put("/:id", updateTask);
 
-router.delete("/delete-restore/:id", deleteRestoreTask);
+// Delete Task
+router.delete("/:id", deleteTask);
 
-export default router;
+module.exports = router;

@@ -13,14 +13,14 @@ const workspaceSchema = new mongoose.Schema(
 
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "user",
     required: true,
   },
 
   members: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
     },
   ],
 },

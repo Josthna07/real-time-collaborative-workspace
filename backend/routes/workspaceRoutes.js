@@ -10,15 +10,6 @@ const {
   inviteMember,
 } = require("../controllers/workspaceController");
 
-console.log({
-  createWorkspace,
-  getWorkspaces,
-  getWorkspaceBoards,
-  getWorkspaceById,
-  updateWorkspace,
-  deleteWorkspace,
-  inviteMember
-});
 
 const router = express.Router();
 

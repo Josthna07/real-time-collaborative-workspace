@@ -90,20 +90,20 @@ export const apiSlice = createApi({
     }),
     loginUser: builder.mutation({
       query: (data) => ({
-        url: "/user/login",
+        url: "/auth/login",
         method: "POST",
         body: data,
       }),
     }),
     logoutUser: builder.mutation({
       query: () => ({
-        url: "/user/logout",
+        url: "/auth/logout",
         method: "POST",
       }),
     }),
     registerUser: builder.mutation({
       query: (data) => ({
-        url: "/user/register",
+        url: "/auth/register",
         method: "POST",
         body: data,
       }),

@@ -2,92 +2,36 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const API_URI = "http://localhost:5000/api";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: API_URI,
-  credentials: "include",
-});
-
 export const apiSlice = createApi({
-  baseQuery,
-  tagTypes: ["Task", "User", "Notification"],
+  reducerPath: "api",
+  baseQuery: fetchBaseQuery({
+    baseUrl: API_URI,
+    credentials: "include",
+  }),
+
+  tagTypes: [
+    "Auth",
+    "Workspace",
+    "Board",
+    "Task",
+    "Comment",
+    "Notification",
+  ],
+
   endpoints: (builder) => ({
-    createTask: builder.mutation({
+
+    // ==========================================================
+    // AUTH
+    // ==========================================================
+
+    registerUser: builder.mutation({
       query: (data) => ({
-        url: "/task/create",
+        url: "/auth/register",
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Task"],
     }),
-    getTasks: builder.query({
-      query: (params) => {
-        const searchParams = new URLSearchParams();
 
-        if (params?.isTrashed) {
-          searchParams.set("isTrashed", "true");
-        }
-
-        if (params?.stage) {
-          searchParams.set("stage", params.stage);
-        }
-
-        const queryString = searchParams.toString();
-
-        return queryString ? `/task?${queryString}` : "/task";
-      },
-      providesTags: ["Task"],
-    }),
-    getTask: builder.query({
-      query: (id) => `/task/${id}`,
-      providesTags: ["Task"],
-    }),
-    updateTask: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/task/update/${id}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["Task"],
-    }),
-    trashTask: builder.mutation({
-      query: (id) => ({
-        url: `/task/${id}`,
-        method: "PUT",
-      }),
-      invalidatesTags: ["Task"],
-    }),
-    createSubTask: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/task/create-subtask/${id}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["Task"],
-    }),
-    postTaskActivity: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/task/activity/${id}`,
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Task"],
-    }),
-    duplicateTask: builder.mutation({
-      query: (id) => ({
-        url: `/task/duplicate/${id}`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Task"],
-    }),
-    deleteRestoreTask: builder.mutation({
-      query: ({ id, actionType }) => ({
-        url: id
-          ? `/task/delete-restore/${id}?actionType=${actionType}`
-          : `/task/delete-restore?actionType=${actionType}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["Task"],
-    }),
     loginUser: builder.mutation({
       query: (data) => ({
         url: "/auth/login",
@@ -95,55 +39,201 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
-    logoutUser: builder.mutation({
+
+    // ==========================================================
+    // WORKSPACE
+    // ==========================================================
+
+    getWorkspaces: builder.query({
       query: () => ({
-        url: "/auth/logout",
-        method: "POST",
+        url: "/workspaces",
+        method: "GET",
       }),
+      providesTags: ["Workspace"],
     }),
-    registerUser: builder.mutation({
-      query: (data) => ({
-        url: "/auth/register",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["User"],
-    }),
-    getTeamList: builder.query({
-      query: () => "/user/get-team",
-      providesTags: ["User"],
-    }),
-    updateUserProfile: builder.mutation({
-      query: (data) => ({
-        url: "/user/profile",
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["User"],
-    }),
-    activateUserProfile: builder.mutation({
-      query: ({ id, isActive }) => ({
-        url: `/user/${id}`,
-        method: "PUT",
-        body: { isActive },
-      }),
-      invalidatesTags: ["User"],
-    }),
-    deleteUserProfile: builder.mutation({
+
+    getWorkspace: builder.query({
       query: (id) => ({
-        url: `/user/${id}`,
+        url: `/workspaces/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Workspace"],
+    }),
+
+    createWorkspace: builder.mutation({
+      query: (data) => ({
+        url: "/workspaces",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Workspace"],
+    }),
+
+    updateWorkspace: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/workspaces/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Workspace"],
+    }),
+
+    deleteWorkspace: builder.mutation({
+      query: (id) => ({
+        url: `/workspaces/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["Workspace"],
     }),
+
+    inviteMember: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/workspaces/${id}/invite`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Workspace"],
+    }),
+
+    getWorkspaceBoards: builder.query({
+      query: (workspaceId) => ({
+        url: `/workspaces/${workspaceId}/boards`,
+        method: "GET",
+      }),
+      providesTags: ["Board"],
+    }),
+
+    // ======= PART 2 STARTS BELOW =======
+        // ==========================================================
+    // BOARD
+    // ==========================================================
+
+    getBoards: builder.query({
+      query: () => ({
+        url: "/boards",
+        method: "GET",
+      }),
+      providesTags: ["Board"],
+    }),
+
+    getBoard: builder.query({
+      query: (id) => ({
+        url: `/boards/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Board"],
+    }),
+
+    createBoard: builder.mutation({
+      query: (data) => ({
+        url: "/boards",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Board"],
+    }),
+
+    updateBoard: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/boards/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Board"],
+    }),
+
+    deleteBoard: builder.mutation({
+      query: (id) => ({
+        url: `/boards/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Board"],
+    }),
+
+    // ==========================================================
+    // TASK
+    // ==========================================================
+
+    getTasks: builder.query({
+      query: () => ({
+        url: "/tasks",
+        method: "GET",
+      }),
+      providesTags: ["Task"],
+    }),
+
+    getTask: builder.query({
+      query: (id) => ({
+        url: `/tasks/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Task"],
+    }),
+
+    createTask: builder.mutation({
+      query: (data) => ({
+        url: "/tasks",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Task"],
+    }),
+
+    updateTask: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/tasks/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Task"],
+    }),
+
+    deleteTask: builder.mutation({
+      query: (id) => ({
+        url: `/tasks/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Task"],
+    }),
+
+        // ==========================================================
+    // COMMENT
+    // ==========================================================
+
+    getComments: builder.query({
+      query: (taskId) => ({
+        url: `/comments/${taskId}`,
+        method: "GET",
+      }),
+      providesTags: ["Comment"],
+    }),
+
+    createComment: builder.mutation({
+      query: (data) => ({
+        url: "/comments",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Comment"],
+    }),
+
+    // ==========================================================
+    // NOTIFICATION
+    // ==========================================================
+
     getNotifications: builder.query({
-      query: () => "/user/notifications",
+      query: () => ({
+        url: "/notifications",
+        method: "GET",
+      }),
       providesTags: ["Notification"],
     }),
-    markNotiAsRead: builder.mutation({
-      query: ({ id, isReadType }) => ({
-        url: `/user/read-noti?id=${id || ""}&isReadType=${isReadType || ""}`,
-        method: "PUT",
+
+    createNotification: builder.mutation({
+      query: (data) => ({
+        url: "/notifications",
+        method: "POST",
+        body: data,
       }),
       invalidatesTags: ["Notification"],
     }),
@@ -151,22 +241,40 @@ export const apiSlice = createApi({
 });
 
 export const {
-  useCreateTaskMutation,
-  useGetTasksQuery,
-  useGetTaskQuery,
-  useUpdateTaskMutation,
-  useTrashTaskMutation,
-  useCreateSubTaskMutation,
-  usePostTaskActivityMutation,
-  useDuplicateTaskMutation,
-  useDeleteRestoreTaskMutation,
+  // AUTH
   useRegisterUserMutation,
   useLoginUserMutation,
-  useLogoutUserMutation,
-  useGetTeamListQuery,
-  useUpdateUserProfileMutation,
-  useActivateUserProfileMutation,
-  useDeleteUserProfileMutation,
+
+  // WORKSPACE
+  useGetWorkspacesQuery,
+  useGetWorkspaceQuery,
+  useCreateWorkspaceMutation,
+  useUpdateWorkspaceMutation,
+  useDeleteWorkspaceMutation,
+  useInviteMemberMutation,
+  useGetWorkspaceBoardsQuery,
+
+  // BOARD
+  useGetBoardsQuery,
+  useGetBoardQuery,
+  useCreateBoardMutation,
+  useUpdateBoardMutation,
+  useDeleteBoardMutation,
+
+  // TASK
+  useGetTasksQuery,
+  useGetTaskQuery,
+  useCreateTaskMutation,
+  useUpdateTaskMutation,
+  useDeleteTaskMutation,
+
+  // COMMENT
+  useGetCommentsQuery,
+  useCreateCommentMutation,
+
+  // NOTIFICATION
   useGetNotificationsQuery,
-  useMarkNotiAsReadMutation,
+  useCreateNotificationMutation,
 } = apiSlice;
+
+

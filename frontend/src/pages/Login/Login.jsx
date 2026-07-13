@@ -1,47 +1,130 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import Card from "../../components/common/AppCard";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+
+import { useLoginUserMutation } from "../../redux/slices/apiSlice";
+import { setCredentials } from "../../redux/slices/authSlice";
 
 function Login() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [loginUser, { isLoading }] = useLoginUserMutation();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await loginUser(formData).unwrap();
+
+      dispatch(setCredentials(res));
+
+      navigate("/dashboard");
+    } catch (err) {
+      alert(err?.data?.message || "Login Failed");
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-96">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Welcome Back
-        </h2>
+    <div className="min-h-screen flex">
 
-        <p className="text-center text-gray-500 mb-6">
-          Sign in to continue
-        </p>
+      {/* Left Side */}
 
-        <form>
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 to-indigo-800 text-white items-center justify-center p-12">
 
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div>
 
-          <button
-            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
-          >
-            Login
-          </button>
-        </form>
+          <h1 className="text-6xl font-bold mb-6">
+            Workspace Manager
+          </h1>
 
-        <p className="text-center mt-5 text-gray-600">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 font-semibold"
-          >
-            Register
-          </Link>
-        </p>
+          <p className="text-xl text-blue-100 leading-8">
+            Manage Workspaces, Boards, Tasks, Comments and
+            Notifications from one collaborative platform.
+          </p>
+
+        </div>
+
       </div>
+
+      {/* Right Side */}
+
+      <div className="flex-1 flex justify-center items-center bg-slate-100 p-8">
+
+        <Card className="w-full max-w-md">
+
+          <h2 className="text-3xl font-bold mb-2">
+            Welcome Back
+          </h2>
+
+          <p className="text-gray-500 mb-8">
+            Login to continue
+          </p>
+
+          <form onSubmit={handleSubmit}>
+
+            <Input
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter email"
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter password"
+              required
+            />
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging In..." : "Login"}
+            </Button>
+
+          </form>
+
+          <p className="mt-8 text-center">
+
+            Don't have an account?
+
+            <Link
+              to="/register"
+              className="text-blue-600 font-semibold ml-2"
+            >
+              Register
+            </Link>
+
+          </p>
+
+        </Card>
+
+      </div>
+
     </div>
   );
 }

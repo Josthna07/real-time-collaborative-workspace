@@ -1,0 +1,187 @@
+import { useState } from "react";
+import ModalWrapper from "../ModalWrapper";
+import { Dialog } from "@headlessui/react";
+import Textbox from "../Textbox";
+import { useForm } from "react-hook-form";
+import UserList from "./UserList";
+import SelectList from "../SelectList";
+import { BiImages } from "react-icons/bi";
+import Button from "../Button";
+import { toast } from "sonner";
+import {
+  useCreateTaskMutation,
+  useGetTeamListQuery,
+  useUpdateTaskMutation,
+} from "../../redux/slices/apiSlice";
+
+const LISTS = ["TODO", "IN PROGRESS", "COMPLETED"];
+const PRIORIRY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
+
+const AddTask = ({ open, setOpen, task = null }) => {
+  const initialTeam = Array.isArray(task?.team)
+    ? task.team.map((member) => member?._id ?? member)
+    : [];
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const [team, setTeam] = useState(initialTeam);
+  const [stage, setStage] = useState(task?.stage?.toUpperCase() || LISTS[0]);
+  const [priority, setPriority] = useState(
+    task?.priority?.toUpperCase() || PRIORIRY[2],
+  );
+  const [assets, setAssets] = useState([]);
+  const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
+  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
+  const { data: teamMembers = [] } = useGetTeamListQuery();
+
+  const submitHandler = async (data) => {
+    try {
+      const teamIds =
+        team?.length > 0
+          ? team
+          : teamMembers.slice(0, 1).map((member) => member._id);
+
+      // Build a real multipart/form-data payload so the selected files'
+      // actual binary content gets uploaded, not just their names.
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("date", data.date);
+      formData.append("stage", stage.toLowerCase());
+      formData.append("priority", priority.toLowerCase());
+      formData.append("team", JSON.stringify(teamIds));
+
+      // Keep any existing assets already on the task (relevant on update)
+      formData.append(
+        "existingAssets",
+        JSON.stringify(task?.assets || []),
+      );
+
+      // Attach newly selected files
+      Array.from(assets || []).forEach((file) => {
+        formData.append("assets", file);
+      });
+
+      const res = task?._id
+        ? await updateTask({ id: task._id, data: formData }).unwrap()
+        : await createTask(formData).unwrap();
+
+      toast.success(
+        res?.message ||
+          (task?._id
+            ? "Task updated successfully."
+            : "Task added successfully."),
+      );
+      setOpen(false);
+    } catch (err) {
+      toast.error(err?.data?.message || err?.error || "Failed to save task.");
+    }
+  };
+
+  const handleSelect = (e) => {
+    setAssets(e.target.files);
+  };
+
+  return (
+    <ModalWrapper open={open} setOpen={setOpen}>
+      <form onSubmit={handleSubmit(submitHandler)}>
+        <Dialog.Title
+          as="h2"
+          className="text-base font-bold leading-6 text-gray-900 mb-4"
+        >
+          {task ? "UPDATE TASK" : "ADD TASK"}
+        </Dialog.Title>
+
+        <div className="mt-2 flex flex-col gap-6">
+          <Textbox
+            placeholder="Task Title"
+            type="text"
+            name="title"
+            label="Task Title"
+            className="w-full rounded"
+            register={register("title", { required: "Title is required" })}
+            error={errors.title ? errors.title.message : ""}
+          />
+
+          <UserList users={teamMembers} setTeam={setTeam} team={team} />
+
+          <div className="flex gap-4">
+            <SelectList
+              label="Task Stage"
+              lists={LISTS}
+              selected={stage}
+              setSelected={setStage}
+            />
+
+            <div className="w-full">
+              <Textbox
+                placeholder="Date"
+                type="date"
+                name="date"
+                label="Task Date"
+                className="w-full rounded"
+                register={register("date", {
+                  required: "Date is required!",
+                })}
+                error={errors.date ? errors.date.message : ""}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <SelectList
+              label="Priority Level"
+              lists={PRIORIRY}
+              selected={priority}
+              setSelected={setPriority}
+            />
+
+            <div className="w-full flex items-center justify-center mt-4">
+              <label
+                className="flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer my-4"
+                htmlFor="imgUpload"
+              >
+                <input
+                  type="file"
+                  className="hidden"
+                  id="imgUpload"
+                  onChange={(e) => handleSelect(e)}
+                  accept=".jpg, .png, .jpeg"
+                  multiple={true}
+                />
+                <BiImages />
+                <span>Add Assets</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 py-6 flex items-center justify-center gap-6">
+            {isCreating || isUpdating ? (
+              <span className="text-base py-2 text-red-500">
+                Uploading assets
+              </span>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  className="bg-white px-8 py-3 text-base font-semibold text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
+                  onClick={() => setOpen(false)}
+                  label="Cancel"
+                />
+                <Button
+                  label="Submit"
+                  type="submit"
+                  className="bg-blue-600 px-10 py-3 text-base font-semibold text-white rounded-md hover:bg-blue-700"
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </form>
+    </ModalWrapper>
+  );
+};
+
+export default AddTask;

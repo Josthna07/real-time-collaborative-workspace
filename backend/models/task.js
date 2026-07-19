@@ -1,48 +1,76 @@
 const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+{
 
-    description: {
-      type: String,
-      default: "",
-    },
+title:{
+type:String,
+required:true
+},
 
-    board: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Board",
-      required: true,
-    },
+description:{
+type:String
+},
 
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-    },
+board:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"Board",
+required:true
+},
 
-    status: {
-      type: String,
-      enum: ["Todo", "In Progress", "Done"],
-      default: "Todo",
-    },
+createdBy:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"User",
+required:true
+},
 
-    priority: {
-      type: String,
-      enum: ["Low", "Medium", "High"],
-      default: "Medium",
-    },
+status:{
+type:String,
 
-    dueDate: {
-      type: Date,
-    },
-  },
-  {
-    timestamps: true,
-  }
+enum:[
+
+"Todo",
+
+"In Progress",
+
+"Done"
+
+],
+
+default:"Todo"
+
+},
+
+priority:{
+
+type:String,
+
+enum:[
+
+"Low",
+
+"Medium",
+
+"High"
+
+],
+
+default:"Medium"
+
+}
+
+},
+{
+
+timestamps:true
+
+}
 );
 
-module.exports = mongoose.model("Task", taskSchema);
+module.exports = mongoose.model(
+
+"Task",
+
+taskSchema
+
+);

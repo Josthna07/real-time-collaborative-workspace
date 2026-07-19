@@ -8,16 +8,29 @@ const { Server } = require("socket.io");
 const connectDB = require("./backend/config/db");
 
 // Routes
+
 const authRoutes = require("./backend/routes/authRoutes");
 const workspaceRoutes = require("./backend/routes/workspaceRoutes");
 const boardRoutes = require("./backend/routes/boardRoutes");
+const taskRoutes = require("./backend/routes/taskRoutes");
 const commentRoutes = require("./backend/routes/commentRoutes");
 const notificationRoutes = require("./backend/routes/notificationRoutes");
 
+
 // Connect Database
 connectDB();
-
+const cors = require("cors");
 const app = express();
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+    ],
+    credentials: true,
+  })
+);
 
 // Middleware
 app.use(express.json());
@@ -27,8 +40,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/boards", boardRoutes);
+app.use("/api/tasks", taskRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
+
 
 // Home Route
 app.get("/", (req, res) => {
@@ -45,6 +60,9 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
+
+// Make Socket.IO available globally
+global.io = io;
 
 // Socket Events
 io.on("connection", (socket) => {

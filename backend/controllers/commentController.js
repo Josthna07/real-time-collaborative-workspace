@@ -5,6 +5,7 @@ const createComment = async (req, res) => {
   try {
     const { task, user, comment } = req.body;
 
+    // Validate input
     if (!task || !user || !comment) {
       return res.status(400).json({
         success: false,
@@ -12,17 +13,28 @@ const createComment = async (req, res) => {
       });
     }
 
+    // Create comment
     const newComment = await Comment.create({
       task,
       user,
       comment,
     });
 
+    // Populate user details
+    const populatedComment = await Comment.findById(newComment._id)
+      .populate("user", "name email");
+
+    // Send realtime update (Socket.IO)
+    if (global.io) {
+      global.io.emit("receiveComment", populatedComment);
+    }
+
     res.status(201).json({
       success: true,
       message: "Comment added successfully",
-      comment: newComment,
+      comment: populatedComment,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -44,6 +56,7 @@ const getComments = async (req, res) => {
       success: true,
       comments,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
